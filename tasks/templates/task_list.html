@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .task-input {
+            margin-bottom: 20px;
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Task Manager</h2>
+    <p>Manage your tasks efficiently by adding, editing, and deleting them. Mark tasks as completed to keep track of your progress.</p>
+
+    <!-- Add Task Form -->
+    <form id="addTaskForm" class="task-input" onsubmit="addTask(event)">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" id="task-title" placeholder="Task Title" required>
+            </div>
+            <div class="form-group col-md-6">
+                <input type="text" class="form-control" id="task-description" placeholder="Task Description">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="task-completed">Completed</label>
+                <input type="checkbox" id="task-completed">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+    </form>
+
+    <div id="task-list">
+        {% for task in tasks %}
+        <div class="task-item">
+            <div>
+                <strong>{{ task.title }}</strong><br>
+                {{ task.description }}<br>
+                <small>Completed: {{ task.completed }}</small>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-warning" onclick="showEditTaskModal({{ task.id }}, '{{ task.title }}', '{{ task.description }}', {{ task.completed|yesno:'true,false' }})">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="showDeleteTaskModal({{ task.id }})">Delete</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal fade" id="taskModal" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalLabel">Edit Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editTaskForm" onsubmit="saveTask(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="task-id">
+                    <div class="form-group">
+                        <label for="edit-task-title">Title</label>
+                        <input type="text" class="form-control" id="edit-task-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-task-description">Description</label>
+                        <textarea class="form-control" id="edit-task-description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-task-completed">Completed</label>
+                        <input type="checkbox" id="edit-task-completed">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Delete Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this task?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="deleteTask()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Function to retrieve CSRF token from cookies
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function addTask(event) {
+        event.preventDefault();
+        const data = {
+            title: $('#task-title').val(),
+            description: $('#task-description').val(),
+            completed: $('#task-completed').is(':checked')  // Include completed status
+        };
+
+        $.ajax({
+            url: '/add/',
+            type: 'POST',
+            data: data,
+            headers: {
+                'X-CSRFToken': getCSRFToken()  // Include the CSRF token in the request headers
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            }
+        });
+    }
+
+    function showEditTaskModal(id, title, description, completed) {
+        $('#task-id').val(id);
+        $('#edit-task-title').val(title);
+        $('#edit-task-description').val(description);
+        $('#edit-task-completed').prop('checked', completed === 'true'); // Check if completed is true
+        $('#taskModal').modal('show'); // Show the modal
+    }
+
+    function saveTask(event) {
+        event.preventDefault();
+        const id = $('#task-id').val();
+        const data = {
+            title: $('#edit-task-title').val(),
+            description: $('#edit-task-description').val(),
+            completed: $('#edit-task-completed').is(':checked') // Include completed status
+        };
+
+        $.ajax({
+            url: `/edit/${id}/`,
+            type: 'POST',
+            data: data,
+            headers: {
+                'X-CSRFToken': getCSRFToken()  // Include the CSRF token in the request headers
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            }
+        });
+    }
+
+    function showDeleteTaskModal(id) {
+        $('#deleteModal').data('task-id', id).modal('show');
+    }
+
+    function deleteTask() {
+        const id = $('#deleteModal').data('task-id');
+        $.ajax({
+            url: `/delete/${id}/`,
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()  // Include the CSRF token in the request headers
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>
