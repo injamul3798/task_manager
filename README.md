@@ -1,30 +1,30 @@
-# Task Management System
+# Django Task Manager
 
-**Developed by:** Md. Injamul Haque
+**Developed by**: Md. Injamul Haque
 
-## Project Overview
+This project is a Django-based Task Management System that allows users to create, edit, delete, and manage tasks. The system features a responsive interface and robust backend that facilitates task tracking and management. 
 
-The **Task Management System** is a web-based application designed to help users efficiently manage their tasks. This application allows users to create, update, delete, and mark tasks as completed, all through a user-friendly interface. The system supports additional features, including title and description fields for tasks, and it ensures a seamless experience with responsive design.
+## Features
 
-### Key Features
+- **Task CRUD**: Create, Read, Update, Delete tasks.
+- **Task Completion Tracking**: Mark tasks as completed or incomplete.
+- **Dynamic User Interface**: A user-friendly UI built with Bootstrap, featuring real-time task updates and modal dialogs for editing and deleting tasks.
+- **Search and Filter**: Filter tasks based on their completion status.
 
-- **Task Creation:** Easily add new tasks with titles and descriptions.
-- **Task Management:** Update task details, mark tasks as completed, or delete tasks.
-- **User-Friendly Interface:** Intuitive design for an enhanced user experience.
-- **Dynamic Modals:** Edit and delete tasks using modals for quick actions.
+## CI/CD Integration
 
-### Technologies Used
+This project integrates a Continuous Integration (CI) pipeline using GitHub Actions for automated testing. Each push and pull request to the `main` branch triggers the CI pipeline to ensure code quality and functionality through the following steps:
 
-- **Backend:** Django
-- **Frontend:** HTML, CSS, JavaScript, Bootstrap
-- **Database:** SQLite (or any other database as per your setup)
+1. **Database Setup**: A PostgreSQL database is spun up for isolated testing.
+2. **Dependency Installation**: Python dependencies are installed based on the `requirements.txt` file.
+3. **Database Migrations**: Migrations are applied to set up the test database schema.
+4. **Automated Tests**: Django unit tests are executed, validating the application's core functionalities.
 
-### Getting Started
+This CI pipeline ensures any changes to the codebase do not break existing functionality and helps maintain a stable, reliable codebase.
 
-To set up the project locally, follow these steps:
+## Installation and Setup
 
-1. **Clone the repository:**
-
+1. **Clone the Repository**:
    ```bash
    git clone https://github.com/yourusername/task-manager.git
    cd task-manager
