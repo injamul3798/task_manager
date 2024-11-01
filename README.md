@@ -32,5 +32,5 @@ This CI pipeline ensures any changes to the codebase do not break existing funct
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/task-manager.git
+    git clone https://github.com/yourusername/task-manager.git](https://github.com/injamul3798/task_manager_with_CI_integrations)
    cd task-manager
